@@ -6,22 +6,30 @@
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
 		<version>4.0.0</version>
-		<relativePath/>
+		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.leodeev.project</groupId>
 	<artifactId>whatsappbot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>whatsappbot</name>
-	<description>WhatsApp Bot with Claude/OpenAI Integration</description>
-	
+	<description>Demo project for Spring Boot</description>
+	<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
-	
 	<dependencies>
-		<!-- =====================================================================
-		     SPRING BOOT STARTERS
-		     ===================================================================== -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -36,104 +44,44 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-configuration-processor</artifactId>
-			<optional>true</optional>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
-		<!-- =====================================================================
-		     DATABASE
-		     ===================================================================== -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
-		<!-- =====================================================================
-		     LOMBOK
-		     ===================================================================== -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-
-		<!-- =====================================================================
-		     HTTP CLIENT & JSON (for API calls to Claude/OpenAI)
-		     ===================================================================== -->
-		<dependency>
-			<groupId>com.squareup.okhttp3</groupId>
-			<artifactId>okhttp</artifactId>
-			<version>4.11.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.code.gson</groupId>
-			<artifactId>gson</artifactId>
-			<version>2.10.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>2.16.1</version>
-		</dependency>
-
-		<!-- =====================================================================
-		     OPENAI API (Valid version from Maven Central)
-		     Choose ONE option below:
-		     
-		     OPTION 1 (Recommended): Official OpenAI SDK
-		     OPTION 2: LangChain4J wrapper (simpler)
-		     OPTION 3: None - use HTTP client directly (OkHttp already included)
-		     ===================================================================== -->
-		
-		<!-- OPTION 1: Official OpenAI Java SDK (Recommended) -->
-		<dependency>
-			<groupId>com.openai</groupId>
-			<artifactId>openai-java</artifactId>
-			<version>0.7.1</version>
-		</dependency>
-
-		<!-- OPTION 2 (ALTERNATIVE): LangChain4J OpenAI Integration
-		<dependency>
-			<groupId>dev.langchain4j</groupId>
-			<artifactId>langchain4j-open-ai</artifactId>
-			<version>0.27.1</version>
-		</dependency>
-		-->
-
-		<!-- OPTION 3 (ALTERNATIVE): No OpenAI dependency, use OkHttp directly
-		     (Uncomment to use this option - OkHttp is already included above)
-		-->
-
-		<!-- =====================================================================
-		     TESTING
-		     ===================================================================== -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
+			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>io.projectreactor</groupId>
-			<artifactId>reactor-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- =====================================================================
-		     NETTY HTTP/2 (WebFlux - QUIC/HTTP3 disabled via application.properties)
-		     ===================================================================== -->
 		<dependency>
-			<groupId>io.projectreactor.netty</groupId>
-			<artifactId>reactor-netty-http</artifactId>
-			<version>1.3.0</version>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux-test</artifactId>
+			<scope>test</scope>
 		</dependency>
-
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
 	</dependencies>
 
 	<build>
