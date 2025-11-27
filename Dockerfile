@@ -5,9 +5,6 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn clean package -DskipTests
 
-# CAMBIAR ESTO:
-FROM eclipse-temurin:17-jre-alpine
-
 # POR ESTO:
 FROM eclipse-temurin:17-jre
 WORKDIR /app
