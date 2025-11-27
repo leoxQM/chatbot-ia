@@ -18,9 +18,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implementación del servicio de IA usando Claude (Anthropic)
+ * Implementación del servicio de IA usando OpenAI (GPT-3.5-turbo)
  * SOLID: Single Responsibility Principle - Solo maneja lógica de IA
- * SOLID: Open/Closed Principle - Se puede extender para otros proveedores (OpenAI, etc.)
+ * SOLID: Open/Closed Principle - Se puede extender para otros proveedores
  */
 @Slf4j
 @Service
@@ -59,8 +59,8 @@ public class AIServiceImpl implements AIService {
             currentMessage.put("content", userMessage);
             messages.add(currentMessage);
             
-            // Llamar a Claude API
-            return callClaudeAPI(messages, null);
+            // Llamar a OpenAI API
+            return callOpenAIAPI(messages, null);
             
         } catch (Exception e) {
             log.error("Error generando respuesta de IA: {}", e.getMessage(), e);
@@ -86,8 +86,8 @@ public class AIServiceImpl implements AIService {
             userMsg.put("content", userMessage);
             messages.add(userMsg);
             
-            // Llamar a Claude API con system prompt
-            return callClaudeAPI(messages, systemPrompt);
+            // Llamar a OpenAI API con system prompt
+            return callOpenAIAPI(messages, systemPrompt);
             
         } catch (Exception e) {
             log.error("Error generando respuesta de IA con productos: {}", e.getMessage(), e);
@@ -157,54 +157,63 @@ public class AIServiceImpl implements AIService {
     }
     
     /**
-     * Llamar a Claude API
+     * Llamar a OpenAI API (GPT-3.5-turbo)
      */
-    private AIResponse callClaudeAPI(List<Map<String, String>> messages, String systemPrompt) {
-        log.info("Llamando a Claude API");
+    private AIResponse callOpenAIAPI(List<Map<String, String>> messages, String systemPrompt) {
+        log.info("Llamando a OpenAI API");
         
         try {
             WebClient webClient = webClientBuilder.build();
             
-            // Construir request body
-            Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", aiConfig.getClaude().getModel());
-            requestBody.put("max_tokens", aiConfig.getClaude().getMax().getTokens());
-            requestBody.put("messages", messages);
-            
             // Agregar system prompt si existe
+            List<Map<String, String>> messagesWithSystem = new ArrayList<>();
             if (systemPrompt != null && !systemPrompt.isEmpty()) {
-                requestBody.put("system", systemPrompt);
+                Map<String, String> systemMessage = new HashMap<>();
+                systemMessage.put("role", "system");
+                systemMessage.put("content", systemPrompt);
+                messagesWithSystem.add(systemMessage);
             }
+            messagesWithSystem.addAll(messages);
             
-            // Hacer llamada a Claude API
+            // Construir request body para OpenAI
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("model", "gpt-4o-mini");
+            requestBody.put("max_tokens", aiConfig.getClaude().getMax().getTokens());
+            requestBody.put("messages", messagesWithSystem);
+            requestBody.put("temperature", 0.7);
+            
+            // Hacer llamada a OpenAI API
             @SuppressWarnings("unchecked")
             Map<String, Object> response = (Map<String, Object>) webClient.post()
-                    .uri(aiConfig.getClaude().getApi().getUrl())
-                    .header("x-api-key", aiConfig.getClaude().getApi().getKey())
-                    .header("anthropic-version", "2023-06-01")
+                    .uri("https://api.openai.com/v1/chat/completions")
+                    .header("Authorization", "Bearer " + aiConfig.getClaude().getApi().getKey())
                     .header("content-type", "application/json")
                     .bodyValue(requestBody)
                     .retrieve()
                     .bodyToMono(Map.class)
                     .onErrorResume(e -> {
-                        log.error("Error en llamada a Claude API: {}", e.getMessage(), e);
+                        log.error("Error en llamada a OpenAI API: {}", e.getMessage(), e);
                         return Mono.empty();
                     })
                     .block();
             
             if (response == null) {
-                throw new AIServiceException("Respuesta vacía de Claude API");
+                throw new AIServiceException("Respuesta vacía de OpenAI API");
             }
             
             // Extraer contenido de la respuesta
-            String content = extractContentFromClaudeResponse(response);
+            String content = extractContentFromOpenAIResponse(response);
             
             // Extraer información adicional
             String model = (String) response.get("model");
             @SuppressWarnings("unchecked")
             Map<String, Object> usage = (Map<String, Object>) response.get("usage");
-            Integer tokensUsed = usage != null ? (Integer) usage.get("output_tokens") : null;
-            String finishReason = (String) response.get("stop_reason");
+            Integer tokensUsed = usage != null ? (Integer) usage.get("completion_tokens") : null;
+            
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
+            String finishReason = choices != null && !choices.isEmpty() ? 
+                    (String) choices.get(0).get("finish_reason") : null;
             
             log.info("Respuesta de IA generada exitosamente");
             
@@ -216,28 +225,31 @@ public class AIServiceImpl implements AIService {
                     .build();
             
         } catch (Exception e) {
-            log.error("Error llamando a Claude API: {}", e.getMessage(), e);
-            throw new AIServiceException("Error al llamar a Claude API", e);
+            log.error("Error llamando a OpenAI API: {}", e.getMessage(), e);
+            throw new AIServiceException("Error al llamar a OpenAI API", e);
         }
     }
     
     /**
-     * Extraer contenido de la respuesta de Claude
+     * Extraer contenido de la respuesta de OpenAI
      */
     @SuppressWarnings("unchecked")
-    private String extractContentFromClaudeResponse(Map<String, Object> response) {
+    private String extractContentFromOpenAIResponse(Map<String, Object> response) {
         try {
-            List<Map<String, Object>> content = (List<Map<String, Object>>) response.get("content");
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) response.get("choices");
             
-            if (content != null && !content.isEmpty()) {
-                Map<String, Object> firstContent = content.get(0);
-                return (String) firstContent.get("text");
+            if (choices != null && !choices.isEmpty()) {
+                Map<String, Object> choice = choices.get(0);
+                Map<String, Object> message = (Map<String, Object>) choice.get("message");
+                if (message != null) {
+                    return (String) message.get("content");
+                }
             }
             
             return "No se pudo generar una respuesta.";
             
         } catch (Exception e) {
-            log.error("Error extrayendo contenido de respuesta de Claude: {}", e.getMessage(), e);
+            log.error("Error extrayendo contenido de respuesta de OpenAI: {}", e.getMessage(), e);
             return "Error procesando respuesta.";
         }
     }
