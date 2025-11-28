@@ -183,10 +183,15 @@ public class AIServiceImpl implements AIService {
             requestBody.put("temperature", 0.7);
             
             // Hacer llamada a OpenAI API
+            String openaiApiKey = System.getenv("OPENAI_API_KEY");
+            if (openaiApiKey == null || openaiApiKey.isEmpty()) {
+                throw new AIServiceException("OPENAI_API_KEY no configurada");
+            }
+            
             @SuppressWarnings("unchecked")
             Map<String, Object> response = (Map<String, Object>) webClient.post()
                     .uri("https://api.openai.com/v1/chat/completions")
-                    .header("Authorization", "Bearer " + aiConfig.getClaude().getApi().getKey())
+                    .header("Authorization", "Bearer " + openaiApiKey)
                     .header("content-type", "application/json")
                     .bodyValue(requestBody)
                     .retrieve()
